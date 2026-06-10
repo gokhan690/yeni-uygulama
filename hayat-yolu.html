@@ -352,6 +352,19 @@ select option { background: var(--bg3); }
 </head>
 <body>
 
+<noscript>
+  <div style="position:fixed;inset:0;z-index:999;background:#0f0c29;color:#f1f0fb;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;font-family:sans-serif;line-height:1.7">
+    <div>
+      <div style="font-size:60px">⚠️</div>
+      <h2>Bu görüntüleyici JavaScript çalıştırmıyor</h2>
+      <p>Dosya önizlemesinde (ör. iPhone "Dosyalar" hızlı bakış) oyun çalışmaz.<br>
+      Dosyayı <b>Chrome, Safari veya Edge gibi bir tarayıcıyla açın</b>.<br><br>
+      📱 Telefonda en kolay yol: dosyayı bilgisayara alıp çift tıklamak<br>
+      ya da oyunu bir web adresinde yayınlamak (ör. GitHub Pages).</p>
+    </div>
+  </div>
+</noscript>
+
 <!-- ================= KARAKTER OLUŞTURMA EKRANI ================= -->
 <div id="screen-create" class="screen active">
   <div class="create-card glass">
@@ -742,6 +755,12 @@ const DATA = {
 const SAVE_PREFIX = "hayatYolu_slot";
 const SLOTS = 3;
 let S = null; // oyun durumu
+
+// localStorage engelliyse (gizli mod, kısıtlı görüntüleyici) bellekte tut
+const MEM_STORE = {};
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { return MEM_STORE[k] || null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { MEM_STORE[k] = v; } }
+function storeDel(k) { try { localStorage.removeItem(k); } catch (e) { delete MEM_STORE[k]; } }
 
 // ---------- Yardımcılar ----------
 const $ = id => document.getElementById(id);
@@ -1320,7 +1339,7 @@ function showDeathScreen() {
   sum += `🏆 Başarımlar (${ach.length}/${DATA.achievements.length}): ${ach.map(a => a.emoji).join(" ") || "—"}`;
   $("death-summary").innerHTML = sum;
   $("screen-death").classList.add("active");
-  localStorage.removeItem(SAVE_PREFIX + S.slot);
+  storeDel(SAVE_PREFIX + S.slot);
 }
 
 // ====================================================
@@ -1854,12 +1873,12 @@ function buyPet(id) {
 // ---------- KAYIT (3 slot) ----------
 function save() {
   if (!S || !S.alive) return;
-  try { localStorage.setItem(SAVE_PREFIX + S.slot, JSON.stringify(S)); } catch (e) { /* depolama yok */ }
+  storeSet(SAVE_PREFIX + S.slot, JSON.stringify(S));
 }
 
 function slotInfo(i) {
   try {
-    const raw = localStorage.getItem(SAVE_PREFIX + i);
+    const raw = storeGet(SAVE_PREFIX + i);
     if (!raw) return null;
     const s = JSON.parse(raw);
     return s && s.alive ? s : null;
@@ -1887,7 +1906,7 @@ function continueSlot(i) {
 }
 
 function deleteSlot(i) {
-  localStorage.removeItem(SAVE_PREFIX + i);
+  storeDel(SAVE_PREFIX + i);
   refreshSlots();
 }
 

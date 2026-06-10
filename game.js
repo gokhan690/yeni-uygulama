@@ -4,6 +4,12 @@ const SAVE_PREFIX = "hayatYolu_slot";
 const SLOTS = 3;
 let S = null; // oyun durumu
 
+// localStorage engelliyse (gizli mod, kısıtlı görüntüleyici) bellekte tut
+const MEM_STORE = {};
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { return MEM_STORE[k] || null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { MEM_STORE[k] = v; } }
+function storeDel(k) { try { localStorage.removeItem(k); } catch (e) { delete MEM_STORE[k]; } }
+
 // ---------- Yardımcılar ----------
 const $ = id => document.getElementById(id);
 const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
@@ -581,7 +587,7 @@ function showDeathScreen() {
   sum += `🏆 Başarımlar (${ach.length}/${DATA.achievements.length}): ${ach.map(a => a.emoji).join(" ") || "—"}`;
   $("death-summary").innerHTML = sum;
   $("screen-death").classList.add("active");
-  localStorage.removeItem(SAVE_PREFIX + S.slot);
+  storeDel(SAVE_PREFIX + S.slot);
 }
 
 // ====================================================
@@ -1115,12 +1121,12 @@ function buyPet(id) {
 // ---------- KAYIT (3 slot) ----------
 function save() {
   if (!S || !S.alive) return;
-  try { localStorage.setItem(SAVE_PREFIX + S.slot, JSON.stringify(S)); } catch (e) { /* depolama yok */ }
+  storeSet(SAVE_PREFIX + S.slot, JSON.stringify(S));
 }
 
 function slotInfo(i) {
   try {
-    const raw = localStorage.getItem(SAVE_PREFIX + i);
+    const raw = storeGet(SAVE_PREFIX + i);
     if (!raw) return null;
     const s = JSON.parse(raw);
     return s && s.alive ? s : null;
@@ -1148,7 +1154,7 @@ function continueSlot(i) {
 }
 
 function deleteSlot(i) {
-  localStorage.removeItem(SAVE_PREFIX + i);
+  storeDel(SAVE_PREFIX + i);
   refreshSlots();
 }
 

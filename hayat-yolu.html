@@ -1,3 +1,742 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hayat Yolu — Yaşam Simülasyonu</title>
+<style>
+/* ============ HAYAT YOLU — Görsel Tasarım ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg1: #0f0c29;
+  --bg2: #302b63;
+  --bg3: #24243e;
+  --card: rgba(255, 255, 255, 0.07);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text: #f1f0fb;
+  --text-dim: #a9a6c9;
+  --accent: #8b5cf6;
+  --accent2: #ec4899;
+  --green: #34d399;
+  --red: #f87171;
+  --gold: #fbbf24;
+  --radius: 18px;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  color: var(--text);
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+  background-attachment: fixed;
+  overflow: hidden;
+}
+
+/* yıldız efekti */
+body::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.35), transparent),
+    radial-gradient(1.5px 1.5px at 70% 15%, rgba(255,255,255,.3), transparent),
+    radial-gradient(2px 2px at 85% 60%, rgba(255,255,255,.25), transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.3), transparent),
+    radial-gradient(2px 2px at 10% 70%, rgba(255,255,255,.2), transparent);
+}
+
+.glass {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* ============ EKRANLAR ============ */
+.screen { display: none; height: 100dvh; }
+.screen.active { display: flex; flex-direction: column; }
+
+#screen-create.active, #screen-death.active {
+  align-items: center; justify-content: center; padding: 20px;
+  overflow-y: auto;
+}
+
+/* ============ KARAKTER OLUŞTURMA ============ */
+.create-card, .death-card {
+  width: 100%; max-width: 430px; padding: 32px 28px; text-align: center;
+  animation: popIn .5s cubic-bezier(.2, 1.2, .4, 1);
+}
+
+.logo { font-size: 64px; animation: float 3s ease-in-out infinite; }
+
+h1 {
+  font-size: 34px; font-weight: 800; margin: 8px 0 4px;
+  background: linear-gradient(90deg, #a78bfa, #f472b6, #fbbf24);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 26px; }
+
+.form-group { text-align: left; margin-bottom: 18px; }
+.form-group label {
+  display: block; font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-dim); margin-bottom: 7px;
+}
+
+input[type="text"], select {
+  width: 100%; padding: 13px 15px; border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(0, 0, 0, 0.25); color: var(--text);
+  font-size: 15px; outline: none; transition: border-color .2s;
+}
+input[type="text"]:focus, select:focus { border-color: var(--accent); }
+select option { background: var(--bg3); }
+
+.seg { display: flex; gap: 8px; }
+.seg button {
+  flex: 1; padding: 12px 8px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--card-border);
+  background: rgba(0, 0, 0, 0.25); color: var(--text-dim);
+  font-size: 14px; font-weight: 600; transition: all .2s;
+}
+.seg button.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.45);
+}
+
+.btn {
+  border: none; cursor: pointer; font-weight: 700; color: var(--text);
+  border-radius: 14px; transition: transform .15s, box-shadow .15s, filter .15s;
+}
+.btn:active { transform: scale(.96); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+}
+.btn-primary:hover { filter: brightness(1.1); }
+
+.btn-big { width: 100%; padding: 16px; font-size: 17px; margin-top: 8px; }
+
+.btn-ghost {
+  width: 100%; padding: 13px; margin-top: 10px; font-size: 14px;
+  background: transparent; border: 1px solid var(--card-border); color: var(--text-dim);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+/* ============ OYUN EKRANI ============ */
+#screen-game.active {
+  max-width: 560px; width: 100%; margin: 0 auto;
+  padding: 12px 12px 0; gap: 10px;
+}
+
+.topbar {
+  display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.avatar-wrap { position: relative; }
+.avatar {
+  width: 58px; height: 58px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px;
+  background: linear-gradient(135deg, rgba(139,92,246,.35), rgba(236,72,153,.35));
+  border: 2px solid rgba(255,255,255,.25);
+}
+.age-badge {
+  position: absolute; bottom: -4px; right: -6px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 10px;
+  border: 2px solid var(--bg2);
+}
+
+.who { flex: 1; min-width: 0; }
+.who-name { font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who-sub { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.money {
+  font-size: 16px; font-weight: 800; color: var(--gold);
+  text-shadow: 0 0 14px rgba(251, 191, 36, .4);
+}
+
+/* Statlar */
+.stats { padding: 12px 16px; display: grid; gap: 9px; flex-shrink: 0; }
+.stat { display: flex; align-items: center; gap: 10px; }
+.stat-label { width: 100px; font-size: 12.5px; font-weight: 600; color: var(--text-dim); }
+.stat-val { width: 30px; text-align: right; font-size: 12.5px; font-weight: 700; }
+
+.bar {
+  flex: 1; height: 10px; border-radius: 6px; overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+}
+.bar-fill {
+  height: 100%; width: 0%; border-radius: 6px;
+  transition: width .6s cubic-bezier(.25, 1, .35, 1);
+}
+.bar-fill.happiness { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.bar-fill.health    { background: linear-gradient(90deg, #f87171, #ef4444); }
+.bar-fill.smarts    { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+.bar-fill.looks     { background: linear-gradient(90deg, #c084fc, #a855f7); }
+.bar-fill.fame      { background: linear-gradient(90deg, #fbbf24, #ec4899); }
+
+/* Kayıt slotları */
+.slot-list { display: flex; flex-direction: column; gap: 8px; }
+.slot-row { display: flex; gap: 8px; }
+.slot-load {
+  flex: 1; text-align: left; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--card-border); background: rgba(0,0,0,.25);
+  color: var(--text); cursor: pointer; font-size: 14px; transition: border-color .2s;
+}
+.slot-load:hover { border-color: var(--accent); }
+.slot-load small { color: var(--text-dim); }
+.slot-del {
+  width: 44px; border-radius: 12px; border: 1px solid var(--card-border);
+  background: rgba(248,113,113,.12); color: var(--red); cursor: pointer; font-size: 16px;
+}
+.slot-del:hover { background: rgba(248,113,113,.3); }
+
+/* Günlük */
+.log {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+  gap: 8px; padding: 4px 2px 12px; scroll-behavior: smooth;
+}
+.log::-webkit-scrollbar { width: 5px; }
+.log::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+
+.log-entry {
+  padding: 11px 14px; border-radius: 14px; font-size: 14px; line-height: 1.45;
+  background: var(--card); border: 1px solid var(--card-border);
+  animation: slideIn .35s cubic-bezier(.2, 1, .4, 1);
+}
+.log-entry.year {
+  background: linear-gradient(135deg, rgba(139,92,246,.25), rgba(236,72,153,.18));
+  border-color: rgba(139,92,246,.4);
+  font-weight: 800; text-align: center; font-size: 13px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.log-entry.good   { border-left: 4px solid var(--green); }
+.log-entry.bad    { border-left: 4px solid var(--red); }
+.log-entry.choice { border-left: 4px solid var(--gold); }
+.log-entry .fx { display: block; margin-top: 4px; font-size: 12px; color: var(--text-dim); }
+
+/* Aksiyon barı */
+.actionbar {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-around;
+  padding: 8px 6px; margin-bottom: 12px; gap: 4px;
+}
+.tab-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-dim); font-size: 11px; font-weight: 700;
+  padding: 6px 10px; border-radius: 12px; transition: all .2s;
+}
+.tab-btn span { font-size: 22px; }
+.tab-btn:hover { color: var(--text); background: rgba(255,255,255,.06); }
+
+.btn-age {
+  width: 64px; height: 64px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; font-size: 26px; font-weight: 800;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(236, 72, 153, .5);
+  transition: transform .15s, box-shadow .15s;
+  margin-top: -26px;
+  border: 3px solid rgba(255,255,255,.25);
+}
+.btn-age small { font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+.btn-age:hover { transform: scale(1.07); box-shadow: 0 8px 30px rgba(236, 72, 153, .65); }
+.btn-age:active { transform: scale(.94); }
+
+/* ============ MODAL ============ */
+.overlay {
+  position: fixed; inset: 0; z-index: 50; display: none;
+  align-items: flex-end; justify-content: center;
+  background: rgba(10, 8, 30, 0.6); backdrop-filter: blur(4px);
+}
+.overlay.show { display: flex; animation: fadeIn .2s; }
+
+.modal {
+  width: 100%; max-width: 560px; max-height: 82dvh;
+  border-radius: 24px 24px 0 0; display: flex; flex-direction: column;
+  animation: slideUp .35s cubic-bezier(.2, 1, .4, 1);
+  background: rgba(36, 33, 68, 0.92);
+}
+@media (min-width: 600px) {
+  .overlay.show { align-items: center; }
+  .modal { border-radius: 24px; }
+}
+
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 10px; flex-shrink: 0;
+}
+.modal-head h2 { font-size: 19px; font-weight: 800; }
+.modal-close {
+  background: rgba(255,255,255,.08); border: none; color: var(--text-dim);
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px;
+}
+.modal-close:hover { color: var(--text); background: rgba(255,255,255,.15); }
+
+.modal-body { overflow-y: auto; padding: 6px 20px 24px; }
+.modal-body::-webkit-scrollbar { width: 5px; }
+.modal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+
+.modal-desc { color: var(--text-dim); font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
+
+.opt {
+  width: 100%; display: flex; align-items: center; gap: 13px;
+  padding: 13px 14px; margin-bottom: 9px; border-radius: 14px; cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid var(--card-border);
+  color: var(--text); text-align: left; font-size: 14.5px;
+  transition: all .18s;
+}
+.opt:hover:not(:disabled) {
+  background: rgba(139, 92, 246, .18); border-color: var(--accent);
+  transform: translateX(4px);
+}
+.opt:disabled { opacity: .4; cursor: not-allowed; }
+.opt .opt-emoji { font-size: 26px; flex-shrink: 0; }
+.opt .opt-text { flex: 1; }
+.opt .opt-title { font-weight: 700; }
+.opt .opt-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.opt .opt-right { font-size: 13px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+
+.section-title {
+  font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--text-dim); margin: 18px 0 10px;
+}
+.section-title:first-child { margin-top: 4px; }
+
+/* ============ ÖLÜM EKRANI ============ */
+.tombstone { font-size: 70px; animation: float 3s ease-in-out infinite; }
+.death-years { color: var(--text-dim); font-size: 15px; margin: 4px 0; }
+.death-cause { color: var(--red); font-size: 14px; font-weight: 600; margin-bottom: 18px; }
+.death-summary {
+  text-align: left; background: rgba(0,0,0,.25); border-radius: 14px;
+  padding: 16px; font-size: 13.5px; line-height: 1.9; margin-bottom: 20px;
+  max-height: 34dvh; overflow-y: auto;
+}
+.death-summary b { color: var(--gold); }
+
+/* ============ TOAST ============ */
+#toast-wrap {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 100; display: flex; flex-direction: column; gap: 8px; align-items: center;
+  pointer-events: none;
+}
+.toast {
+  padding: 11px 20px; border-radius: 30px; font-size: 14px; font-weight: 700;
+  background: rgba(36, 33, 68, 0.95); border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  animation: toastIn .3s cubic-bezier(.2, 1.2, .4, 1), fadeOut .4s 2.4s forwards;
+}
+.toast.gold { border-color: var(--gold); color: var(--gold); }
+
+/* ============ ANİMASYONLAR ============ */
+@keyframes popIn { from { opacity: 0; transform: scale(.92) translateY(16px); } }
+@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } }
+@keyframes slideUp { from { transform: translateY(60px); opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-16px) scale(.9); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
+.shake { animation: shake .4s; }
+
+</style>
+</head>
+<body>
+
+<!-- ================= KARAKTER OLUŞTURMA EKRANI ================= -->
+<div id="screen-create" class="screen active">
+  <div class="create-card glass">
+    <div class="logo">🌱</div>
+    <h1>Hayat Yolu</h1>
+    <p class="subtitle">Yeni bir hayata başla. Her seçim kaderini değiştirir.</p>
+
+    <div class="form-group">
+      <label>İsim</label>
+      <input type="text" id="inp-name" placeholder="Adını yaz veya boş bırak (rastgele)">
+    </div>
+
+    <div class="form-group">
+      <label>Cinsiyet</label>
+      <div class="seg" id="seg-gender">
+        <button data-val="m" class="active">👨 Erkek</button>
+        <button data-val="f">👩 Kadın</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Doğduğun Şehir</label>
+      <select id="inp-city"></select>
+    </div>
+
+    <div class="form-group">
+      <label>Zorluk</label>
+      <div class="seg" id="seg-diff">
+        <button data-val="easy">😇 Kolay</button>
+        <button data-val="normal" class="active">🙂 Normal</button>
+        <button data-val="hard">😈 Zor</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-big" id="btn-start">🍼 Hayata Başla</button>
+
+    <div class="form-group" id="slots-group" style="display:none; margin-top:18px">
+      <label>Kayıtlı Hayatlar</label>
+      <div class="slot-list" id="slot-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= OYUN EKRANI ================= -->
+<div id="screen-game" class="screen">
+
+  <!-- Üst bilgi -->
+  <header class="topbar glass">
+    <div class="avatar-wrap">
+      <div class="avatar" id="ui-avatar">👶</div>
+      <div class="age-badge" id="ui-age">0</div>
+    </div>
+    <div class="who">
+      <div class="who-name" id="ui-name">—</div>
+      <div class="who-sub" id="ui-sub">—</div>
+    </div>
+    <div class="money" id="ui-money">₺0</div>
+  </header>
+
+  <!-- Stat çubukları -->
+  <section class="stats glass">
+    <div class="stat">
+      <span class="stat-label">😊 Mutluluk</span>
+      <div class="bar"><div class="bar-fill happiness" id="bar-happiness"></div></div>
+      <span class="stat-val" id="val-happiness">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">❤️ Sağlık</span>
+      <div class="bar"><div class="bar-fill health" id="bar-health"></div></div>
+      <span class="stat-val" id="val-health">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">🧠 Zeka</span>
+      <div class="bar"><div class="bar-fill smarts" id="bar-smarts"></div></div>
+      <span class="stat-val" id="val-smarts">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">✨ Görünüş</span>
+      <div class="bar"><div class="bar-fill looks" id="bar-looks"></div></div>
+      <span class="stat-val" id="val-looks">0</span>
+    </div>
+    <div class="stat" id="row-fame" style="display:none">
+      <span class="stat-label">🌟 Ün</span>
+      <div class="bar"><div class="bar-fill fame" id="bar-fame"></div></div>
+      <span class="stat-val" id="val-fame">0</span>
+    </div>
+  </section>
+
+  <!-- Yaşam günlüğü -->
+  <main class="log" id="ui-log"></main>
+
+  <!-- Alt aksiyon barı -->
+  <nav class="actionbar glass">
+    <button class="tab-btn" data-panel="career"><span>💼</span>Kariyer</button>
+    <button class="tab-btn" data-panel="relations"><span>💞</span>İlişkiler</button>
+    <button class="btn-age" id="btn-age">+<small>Yaş Al</small></button>
+    <button class="tab-btn" data-panel="activities"><span>🎯</span>Aktivite</button>
+    <button class="tab-btn" data-panel="assets"><span>🏠</span>Varlıklar</button>
+  </nav>
+</div>
+
+<!-- ================= PANEL / MODAL ================= -->
+<div id="overlay" class="overlay">
+  <div class="modal glass" id="modal">
+    <div class="modal-head">
+      <h2 id="modal-title">Başlık</h2>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ================= ÖLÜM EKRANI ================= -->
+<div id="screen-death" class="screen">
+  <div class="death-card glass">
+    <div class="tombstone">🪦</div>
+    <h1 id="death-name">—</h1>
+    <p class="death-years" id="death-years">—</p>
+    <p class="death-cause" id="death-cause">—</p>
+    <div class="death-summary" id="death-summary"></div>
+    <button class="btn btn-primary btn-big" id="btn-rebirth">🌱 Yeniden Doğ</button>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script>
+// ============ HAYAT YOLU — Oyun Verileri ============
+
+const DATA = {
+
+  maleNames: ["Ahmet", "Mehmet", "Emre", "Burak", "Can", "Deniz", "Efe", "Kerem", "Mert", "Onur", "Arda", "Baran", "Çınar", "Doruk", "Ege", "Kaan", "Toprak", "Umut", "Yiğit", "Alp"],
+  femaleNames: ["Ayşe", "Elif", "Zeynep", "Defne", "Ecrin", "Su", "Nehir", "Asya", "Mira", "Lina", "Azra", "Duru", "Eylül", "İpek", "Melis", "Nil", "Selin", "Yağmur", "Derin", "Ada"],
+  surnames: ["Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Öztürk", "Aydın", "Arslan", "Doğan", "Kılıç", "Aslan", "Çetin", "Koç", "Kurt", "Özdemir", "Erdoğan", "Yıldız", "Güneş", "Bulut", "Korkmaz"],
+
+  cities: ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Konya", "Gaziantep", "Trabzon", "Eskişehir", "Mersin", "Diyarbakır", "Samsun", "Kayseri", "Muğla"],
+
+  traits: [
+    { name: "Meraklı", emoji: "🔍", desc: "Zekası hızlı gelişir" },
+    { name: "Karizmatik", emoji: "😎", desc: "İlişkilerde şanslı" },
+    { name: "Dayanıklı", emoji: "🛡️", desc: "Hastalıklara dirençli" },
+    { name: "Sanatçı Ruhlu", emoji: "🎨", desc: "Mutluluğu kolay artar" },
+    { name: "Girişimci", emoji: "💡", desc: "Para kazanmada şanslı" },
+    { name: "Asi", emoji: "🔥", desc: "Risk sever, başı belaya girer" },
+  ],
+
+  // ---- Meslekler ----
+  // edu: 0 = eğitimsiz, 1 = lise, 2 = üniversite, 3 = yüksek lisans/doktora
+  jobs: [
+    { id: "garson",     title: "Garson",              emoji: "🍽️", salary: 96000,   edu: 0, smarts: 0 },
+    { id: "kurye",      title: "Moto Kurye",          emoji: "🛵", salary: 108000,  edu: 0, smarts: 0 },
+    { id: "kasiyer",    title: "Market Kasiyeri",     emoji: "🛒", salary: 102000,  edu: 0, smarts: 5 },
+    { id: "guvenlik",   title: "Güvenlik Görevlisi",  emoji: "🦺", salary: 120000,  edu: 1, smarts: 10 },
+    { id: "berber",     title: "Kuaför / Berber",     emoji: "💈", salary: 132000,  edu: 1, smarts: 10 },
+    { id: "sofor",      title: "Otobüs Şoförü",       emoji: "🚌", salary: 144000,  edu: 1, smarts: 15 },
+    { id: "asci",       title: "Aşçı",                emoji: "👨‍🍳", salary: 156000,  edu: 1, smarts: 20 },
+    { id: "elektrikci", title: "Elektrik Teknisyeni", emoji: "⚡", salary: 180000,  edu: 1, smarts: 30 },
+    { id: "polis",      title: "Polis Memuru",        emoji: "👮", salary: 240000,  edu: 1, smarts: 40 },
+    { id: "emlakci",    title: "Emlak Danışmanı",     emoji: "🏘️", salary: 216000,  edu: 1, smarts: 35 },
+    { id: "ogretmen",   title: "Öğretmen",            emoji: "📚", salary: 288000,  edu: 2, smarts: 50 },
+    { id: "hemsire",    title: "Hemşire",             emoji: "💉", salary: 300000,  edu: 2, smarts: 50 },
+    { id: "muhasebeci", title: "Mali Müşavir",        emoji: "🧾", salary: 336000,  edu: 2, smarts: 55 },
+    { id: "mimar",      title: "Mimar",               emoji: "📐", salary: 420000,  edu: 2, smarts: 60 },
+    { id: "muhendis",   title: "Yazılım Mühendisi",   emoji: "💻", salary: 540000,  edu: 2, smarts: 65 },
+    { id: "pilot",      title: "Pilot",               emoji: "✈️", salary: 720000,  edu: 2, smarts: 70 },
+    { id: "avukat",     title: "Avukat",              emoji: "⚖️", salary: 600000,  edu: 2, smarts: 70 },
+    { id: "doktor",     title: "Doktor",              emoji: "🩺", salary: 840000,  edu: 3, smarts: 75 },
+    { id: "cerrah",     title: "Beyin Cerrahı",       emoji: "🧠", salary: 1440000, edu: 3, smarts: 85 },
+    { id: "profesor",   title: "Profesör",            emoji: "🎓", salary: 660000,  edu: 3, smarts: 80 },
+  ],
+
+  partTimeJobs: [
+    { id: "pt_bulasik", title: "Bulaşıkçılık",      emoji: "🧽", salary: 36000 },
+    { id: "pt_dagitim", title: "Broşür Dağıtma",    emoji: "📄", salary: 30000 },
+    { id: "pt_garson",  title: "Kafede Çalışma",    emoji: "☕", salary: 42000 },
+    { id: "pt_ders",    title: "Özel Ders Verme",   emoji: "✏️", salary: 54000, smarts: 60 },
+  ],
+
+  majors: [
+    { id: "tip",      name: "Tıp",                 emoji: "🩺", years: 6, smarts: 70 },
+    { id: "hukuk",    name: "Hukuk",               emoji: "⚖️", years: 4, smarts: 60 },
+    { id: "muh",      name: "Mühendislik",         emoji: "⚙️", years: 4, smarts: 55 },
+    { id: "mimarlik", name: "Mimarlık",            emoji: "📐", years: 4, smarts: 55 },
+    { id: "isletme",  name: "İşletme",             emoji: "📊", years: 4, smarts: 40 },
+    { id: "egitim",   name: "Eğitim Fakültesi",    emoji: "📚", years: 4, smarts: 40 },
+    { id: "saglik",   name: "Sağlık Bilimleri",    emoji: "💉", years: 4, smarts: 45 },
+    { id: "sanat",    name: "Güzel Sanatlar",      emoji: "🎨", years: 4, smarts: 30 },
+  ],
+
+  // Hangi bölüm hangi mesleklerin kapısını açar
+  majorJobs: {
+    tip:      ["doktor", "cerrah", "profesor"],
+    hukuk:    ["avukat", "profesor"],
+    muh:      ["muhendis", "pilot", "profesor"],
+    mimarlik: ["mimar", "profesor"],
+    isletme:  ["muhasebeci", "emlakci", "profesor"],
+    egitim:   ["ogretmen", "profesor"],
+    saglik:   ["hemsire", "doktor", "profesor"],
+    sanat:    ["ogretmen", "profesor"],
+  },
+
+  // ---- Hastalıklar ----
+  // dmg: yıllık sağlık hasarı · cure: iyileşme şansı · surgery: ameliyat gerekir
+  diseases: [
+    { id: "astim",    name: "Astım",            emoji: "🫁", dmg: 3,  cost: 15000,  cure: .50, surgery: false, minAge: 3 },
+    { id: "migren",   name: "Kronik Migren",    emoji: "🤕", dmg: 2,  cost: 10000,  cure: .55, surgery: false, minAge: 12 },
+    { id: "diyabet",  name: "Diyabet",          emoji: "🩸", dmg: 4,  cost: 30000,  cure: .35, surgery: false, minAge: 30 },
+    { id: "tansiyon", name: "Hipertansiyon",    emoji: "💢", dmg: 4,  cost: 25000,  cure: .45, surgery: false, minAge: 40 },
+    { id: "kalp",     name: "Kalp Hastalığı",   emoji: "💔", dmg: 8,  cost: 400000, cure: .65, surgery: true,  minAge: 45 },
+    { id: "kanser",   name: "Kanser",           emoji: "🎗️", dmg: 12, cost: 600000, cure: .55, surgery: true,  minAge: 35 },
+  ],
+
+  // ---- Ünlü Olma Yolları ----
+  fameJobs: [
+    { id: "muzisyen", title: "Müzisyen",               emoji: "🎤", stat: "looks",  statName: "görünüş", action: "Albüm çıkar",            actionEmoji: "💿", base: 30000 },
+    { id: "oyuncu",   title: "Oyuncu",                 emoji: "🎬", stat: "looks",  statName: "görünüş", action: "Dizi seçmelerine katıl", actionEmoji: "🎭", base: 40000 },
+    { id: "fenomen",  title: "Sosyal Medya Fenomeni",  emoji: "📱", stat: "smarts", statName: "zeka",    action: "Viral video çek",        actionEmoji: "🎥", base: 20000 },
+  ],
+
+  // ---- Varlıklar ----
+  cars: [
+    { id: "bisiklet",  name: "Bisiklet",            emoji: "🚲", price: 15000,    happiness: 4 },
+    { id: "motor",     name: "Motosiklet",          emoji: "🏍️", price: 180000,   happiness: 8 },
+    { id: "eskiaraba", name: "İkinci El Araba",     emoji: "🚗", price: 450000,   happiness: 10 },
+    { id: "yeniaraba", name: "Sıfır Araba",         emoji: "🚙", price: 1300000,  happiness: 16 },
+    { id: "luksaraba", name: "Lüks Spor Araba",     emoji: "🏎️", price: 6500000,  happiness: 28 },
+  ],
+  homes: [
+    { id: "studyo", name: "Stüdyo Daire",          emoji: "🚪", price: 1500000,  happiness: 8 },
+    { id: "daire",  name: "3+1 Daire",             emoji: "🏢", price: 4200000,  happiness: 14 },
+    { id: "mustakil", name: "Müstakil Ev",         emoji: "🏡", price: 8500000,  happiness: 20 },
+    { id: "villa",  name: "Deniz Manzaralı Villa", emoji: "🏖️", price: 25000000, happiness: 32 },
+  ],
+  pets: [
+    { id: "balik", name: "Akvaryum Balığı", emoji: "🐠", price: 2000,   happiness: 4,  life: 4 },
+    { id: "kus",   name: "Muhabbet Kuşu",   emoji: "🦜", price: 5000,   happiness: 6,  life: 8 },
+    { id: "kedi",  name: "Kedi",            emoji: "🐱", price: 12000,  happiness: 12, life: 15 },
+    { id: "kopek", name: "Köpek",           emoji: "🐶", price: 20000,  happiness: 14, life: 13 },
+  ],
+
+  // ---- Rastgele Olaylar ----
+  // chance: yıl başına gerçekleşme olasılığı (0-1). cond(s) ile koşullanabilir.
+  events: [
+    // --- Bebeklik / Çocukluk (0-12) ---
+    { min: 1, max: 3, chance: .25, text: "İlk kelimeni söyledin: «{anne}». Annen sevinçten ağladı.", fx: { happiness: 5 } },
+    { min: 2, max: 5, chance: .2, text: "Parkta düşüp dizini kanattın. 😢", fx: { health: -4, happiness: -3 } },
+    { min: 3, max: 7, chance: .2, text: "Anaokulunda resim yarışmasını kazandın! 🖍️", fx: { happiness: 7, smarts: 3 } },
+    { min: 4, max: 9, chance: .18, text: "Bir sokak kedisiyle arkadaş oldun. 🐈", fx: { happiness: 6 } },
+    { min: 5, max: 10, chance: .15, text: "Suçiçeği oldun ve bir hafta evde yattın.", fx: { health: -8, happiness: -4 } },
+    {
+      min: 6, max: 12, chance: .22, text: "Okulda bir zorba sana sataşıyor. Ne yapacaksın?",
+      choices: [
+        { label: "Karşı koy", emoji: "✊", fx: { happiness: 6, health: -5 }, msg: "Karşı koydun! Zorba bir daha sataşmadı ama yumruk yedin." },
+        { label: "Öğretmene söyle", emoji: "🗣️", fx: { happiness: 3, smarts: 2 }, msg: "Öğretmen duruma el koydu. Akıllıca davrandın." },
+        { label: "Görmezden gel", emoji: "🙈", fx: { happiness: -6 }, msg: "İçine attın. Bir süre moralin bozuk gezdin." },
+      ]
+    },
+    { min: 7, max: 12, chance: .15, text: "Matematik yarışmasında okul birincisi oldun! 🏆", fx: { smarts: 6, happiness: 6 }, cond: s => s.stats.smarts > 55 },
+    { min: 8, max: 13, chance: .15, text: "Bisikletten düştün, kolun alçıya alındı.", fx: { health: -10, happiness: -5 } },
+
+    // --- Gençlik (13-17) ---
+    { min: 13, max: 16, chance: .2, text: "Sivilcelerin çıktı, aynaya bakmak istemiyorsun. 😩", fx: { looks: -4, happiness: -3 } },
+    { min: 13, max: 17, chance: .18, text: "Okul takımına seçildin! ⚽", fx: { health: 6, happiness: 7 } },
+    {
+      min: 14, max: 17, chance: .22, text: "Arkadaşların dersi asıp maça gitmeyi teklif ediyor.",
+      choices: [
+        { label: "Onlarla git", emoji: "🎉", fx: { happiness: 8, smarts: -4 }, msg: "Efsane bir gün geçirdin ama dersten geri kaldın.", risk: { chance: .3, fx: { happiness: -6 }, msg: "Müdür yakaladı! Ailene haber verildi, ceza aldın." } },
+        { label: "Derste kal", emoji: "📖", fx: { smarts: 4, happiness: -2 }, msg: "Derste kaldın. Sıkıcıydı ama sınavda işine yaradı." },
+      ]
+    },
+    { min: 15, max: 17, chance: .15, text: "İlk aşkını yaşadın ama karşılıksız çıktı. 💔", fx: { happiness: -7 } },
+    {
+      min: 15, max: 17, chance: .15, text: "Bir partide sana sigara uzattılar.",
+      choices: [
+        { label: "Reddet", emoji: "🚭", fx: { happiness: 1, health: 2 }, msg: "Reddettin. Sağlığın sana teşekkür ediyor." },
+        { label: "Dene", emoji: "🚬", fx: { health: -6, happiness: 3 }, msg: "Denedin, öksürdün. Kötü bir alışkanlığın kapısını araladın." },
+      ]
+    },
+
+    // --- Yetişkinlik (18-50) ---
+    { min: 18, max: 60, chance: .1, text: "Grip oldun, bir hafta yataktan çıkamadın. 🤒", fx: { health: -7, happiness: -3 } },
+    { min: 18, max: 70, chance: .08, text: "Eski bir arkadaşınla karşılaştın, saatlerce sohbet ettiniz. ☕", fx: { happiness: 6 } },
+    { min: 20, max: 55, chance: .07, text: "Cüzdanını kaybettin! 😱", fx: { money: -8000, happiness: -4 } },
+    { min: 20, max: 60, chance: .06, text: "Sokakta para buldun! 🍀", fx: { money: 5000, happiness: 4 } },
+    {
+      min: 18, max: 60, chance: .08, text: "Bir arkadaşın senden borç para istiyor (₺25.000).",
+      cond: s => s.money >= 25000,
+      choices: [
+        { label: "Borç ver", emoji: "🤝", fx: { money: -25000, happiness: 3 }, msg: "Borç verdin.", risk: { chance: .5, fx: { money: 35000, happiness: 5 }, msg: "Arkadaşın borcunu faiziyle geri ödedi! Dostluğunuz pekişti." } },
+        { label: "Reddet", emoji: "🙅", fx: { happiness: -3 }, msg: "Reddettin. Arkadaşın kırıldı ama paran cebinde kaldı." },
+      ]
+    },
+    {
+      min: 22, max: 55, chance: .07, text: "İnternette riskli ama kazançlı görünen bir yatırım fırsatı buldun.",
+      cond: s => s.money >= 50000,
+      choices: [
+        { label: "₺50.000 yatır", emoji: "📈", fx: { money: -50000 }, msg: "Yatırımı yaptın...", risk: { chance: .45, fx: { money: 140000, happiness: 10 }, msg: "Yatırım patladı! Paran neredeyse 3 katına çıktı! 🚀", failMsg: "Yatırım çöktü. Paran buhar oldu. 📉", failFx: { happiness: -10 } } },
+        { label: "Uzak dur", emoji: "🛑", fx: {}, msg: "Riske girmedin. Belki de en doğrusu buydu." },
+      ]
+    },
+    { min: 25, max: 60, chance: .05, text: "Trafik kazası geçirdin! Hastanede uyandın. 🚑", fx: { health: -20, happiness: -8, money: -15000 } },
+    { min: 18, max: 80, chance: .05, text: "Piyangodan amorti çıktı! 🎰", fx: { money: 10000, happiness: 5 } },
+    { min: 30, max: 65, chance: .05, text: "Belin tutuldu, bir hafta dik yürüyemedin.", fx: { health: -8, happiness: -4 } },
+    {
+      min: 18, max: 75, chance: .06, text: "Gece yarısı sokakta cüzdan dolusu para buldun. İçinde kimlik var.",
+      choices: [
+        { label: "Sahibine ulaştır", emoji: "😇", fx: { happiness: 8 }, msg: "Sahibini bulup teslim ettin. Adam sana ₺5.000 ödül verdi!", bonus: { money: 5000 } },
+        { label: "Cebe at", emoji: "😈", fx: { money: 20000, happiness: -3 }, msg: "Parayı aldın. Vicdanın biraz sızlıyor...", karma: -1 },
+      ]
+    },
+
+    // --- Mahkeme / Trafik Kazaları ---
+    {
+      min: 20, max: 75, chance: .06, cond: s => s.cars.length > 0,
+      text: "🚗 Trafik kazası geçirdin! Karşı taraf kırmızı ışıkta geçip arabanı pert etti.",
+      choices: [
+        { label: "Tazminat davası aç", emoji: "⚖️", fx: { money: -30000, health: -8 }, msg: "Avukat tutup mahkemenin yolunu tuttun...", risk: { chance: .65, fx: { money: 250000, happiness: 8 }, msg: "Davayı KAZANDIN! Mahkeme ₺250.000 tazminata hükmetti. 🎉", failMsg: "Bilirkişi raporu aleyhine çıktı, davayı kaybettin. Avukat masrafları da cabası...", failFx: { happiness: -8 } } },
+        { label: "Sigortayla anlaş", emoji: "🤝", fx: { money: 40000, health: -8 }, msg: "Sigorta şirketiyle ₺40.000'e anlaştın. Az ama dertsiz." },
+      ]
+    },
+    {
+      min: 22, max: 75, chance: .05, cond: s => s.cars.length > 0,
+      text: "⚖️ Bir yaya, arabanla ona çarptığını iddia ederek ₺200.000'lik tazminat davası açtı!",
+      choices: [
+        { label: "Şehrin en iyi avukatını tut", emoji: "👨‍⚖️", fx: { money: -60000 }, msg: "Pahalı ama işini bilen bir avukat tuttun...", risk: { chance: .75, fx: { happiness: 6 }, msg: "Avukatın iddiaları paramparça etti — beraat ettin! 🎉", failMsg: "Her şeye rağmen davayı kaybettin ve tazminatı ödedin.", failFx: { money: -200000, happiness: -10 } } },
+        { label: "Kendini kendin savun", emoji: "🗣️", fx: {}, msg: "Mahkemede kürsüye kendin çıktın...", risk: { chance: .35, fx: { happiness: 8 }, msg: "İnanılmaz ama kazandın! Hâkim iddiaları asılsız buldu.", failMsg: "Kaybettin. ₺200.000 tazminat ödemek zorunda kaldın.", failFx: { money: -200000, happiness: -12 } } },
+      ]
+    },
+
+    // --- Şöhret Olayları ---
+    { min: 16, max: 85, chance: .2, cond: s => s.fame >= 30, text: "🤩 Sokakta hayranların seni tanıdı, fotoğraf kuyruğu oluştu!", fx: { happiness: 6 } },
+    {
+      min: 18, max: 85, chance: .12, cond: s => s.fame >= 50,
+      text: "📰 Magazin basını hakkında asılsız bir skandal haberi yaydı!",
+      choices: [
+        { label: "Tekzip ve dava", emoji: "⚖️", fx: { money: -40000 }, msg: "Hukuk ekibini devreye soktun...", risk: { chance: .6, fx: { money: 150000, happiness: 6 }, msg: "Gazete tekzip yayınladı ve tazminat ödedi!", failMsg: "Dava düştü, dedikodu daha da büyüdü.", failFx: { happiness: -8 } } },
+        { label: "Görmezden gel", emoji: "😎", fx: { happiness: -5 }, msg: "Gündem birkaç haftada değişti ama canın epey sıkıldı." },
+      ]
+    },
+    { min: 18, max: 85, chance: .12, cond: s => s.fame >= 60, text: "💎 Dev bir marka seninle reklam anlaşması imzaladı!", fx: { money: 500000, happiness: 8 } },
+
+    // --- Kardeş Olayları ---
+    { min: 6, max: 17, chance: .15, cond: s => s.siblings.some(k => k.alive), text: "😤 Kardeşinle televizyon kumandası yüzünden saç saça kavga ettiniz.", fx: { happiness: -4 } },
+    { min: 25, max: 75, chance: .07, cond: s => s.siblings.some(k => k.alive), text: "🍻 Kardeşinle buluşup eski günleri yâd ettiniz. Gözlerinizden yaş gelene kadar güldünüz.", fx: { happiness: 7 } },
+
+    // --- Yaşlılık (60+) ---
+    { min: 60, max: 100, chance: .12, text: "Eklemlerin ağrıyor, merdivenler eskisi gibi kolay değil.", fx: { health: -6 } },
+    { min: 62, max: 100, chance: .1, text: "Torun sevgisi gibisi yok. Parkta harika bir gün geçirdiniz. 👴👶", fx: { happiness: 8 }, cond: s => s.children.length > 0 },
+    { min: 65, max: 100, chance: .08, text: "Eski fotoğraflara bakıp gençliğini andın. 📷", fx: { happiness: 4 } },
+    { min: 70, max: 100, chance: .1, text: "Kalp çarpıntısı yüzünden hastaneye kaldırıldın.", fx: { health: -15, happiness: -5, money: -20000 } },
+  ],
+
+  // ---- Suçlar ----
+  crimes: [
+    { id: "kapkac",  name: "Kapkaç",          emoji: "👜", gain: [5000, 30000],    catchChance: .35, jail: 1 },
+    { id: "dukkan",  name: "Dükkan Soygunu",  emoji: "🏪", gain: [30000, 120000],  catchChance: .45, jail: 3 },
+    { id: "araba",   name: "Araba Hırsızlığı",emoji: "🚗", gain: [100000, 400000], catchChance: .55, jail: 5 },
+    { id: "banka",   name: "Banka Soygunu",   emoji: "🏦", gain: [500000, 3000000],catchChance: .75, jail: 12 },
+  ],
+
+  // ---- Başarımlar ----
+  achievements: [
+    { id: "uni",       name: "Diplomalı",         emoji: "🎓", desc: "Üniversiteden mezun ol" },
+    { id: "evlilik",   name: "Evet, Evet!",       emoji: "💍", desc: "Evlen" },
+    { id: "ebeveyn",   name: "Ebeveyn",           emoji: "👶", desc: "Çocuğun olsun" },
+    { id: "milyoner",  name: "Milyoner",          emoji: "💰", desc: "₺1.000.000 biriktir" },
+    { id: "multimilyoner", name: "Multimilyoner", emoji: "🤑", desc: "₺10.000.000 biriktir" },
+    { id: "evsahibi",  name: "Ev Sahibi",         emoji: "🏡", desc: "Bir ev satın al" },
+    { id: "asirlik",   name: "Asırlık Çınar",     emoji: "🌳", desc: "100 yaşına ulaş" },
+    { id: "doktor",    name: "Beyaz Önlük",       emoji: "🩺", desc: "Doktor ol" },
+    { id: "sabikali",  name: "Firari",            emoji: "⛓️", desc: "Hapse gir" },
+    { id: "dede",      name: "Emektar",           emoji: "👴", desc: "Emekli ol" },
+    { id: "unlu",      name: "Yıldız",            emoji: "🌟", desc: "Ünün 50'yi geçsin" },
+    { id: "efsane",    name: "Yaşayan Efsane",    emoji: "👑", desc: "Ünün 90'ı geçsin" },
+    { id: "savasci",   name: "Savaşçı",           emoji: "🎗️", desc: "Ameliyatla ciddi bir hastalığı yen" },
+  ],
+
+  causesOfDeath: {
+    health: ["kalp yetmezliği", "uzun süren bir hastalık", "ağır bir enfeksiyon"],
+    old: ["yaşlılık — uykusunda huzur içinde", "doğal nedenler", "yorgun ama dolu dolu yaşanmış bir hayatın sonunda"],
+  },
+};
+
+</script>
+<script>
 // ============ HAYAT YOLU — Oyun Motoru ============
 
 const SAVE_PREFIX = "hayatYolu_slot";
@@ -1234,3 +1973,7 @@ function init() {
 }
 
 init();
+
+</script>
+</body>
+</html>

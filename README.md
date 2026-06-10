@@ -18,9 +18,17 @@ BitLife tarzı ama daha gerçekçi, daha derin ve daha şık bir **hayat simüla
 - **Aile** — ebeveynlerinle ilişkini güçlendir, miras kalabilir; çocukların büyüyüp evden ayrılır
 - **Varlıklar** — bisikletten lüks spor arabaya, stüdyo daireden deniz manzaralı villaya; evcil hayvanlar (onlar da yaşlanır 🌈)
 - **Yeraltı dünyası** — kapkaççılıktan banka soygununa; yakalanırsan hapse girersin
-- **30+ rastgele hayat olayı** — bazıları seçim ister ve sonuçları yıllarca peşini bırakmaz
+- **Ünlü olma yolu** — müzisyen, oyuncu veya sosyal medya fenomeni ol; albüm çıkar, turneye çık, magazin skandallarıyla boğuş; ünün yükseldikçe gelirin katlanır
+- **Hastalık ve ameliyat sistemi** — astımdan kansere 6 hastalık; tedavi ettirmezsen sağlığını yıllar içinde kemirir, riskli ameliyatlar hayat kurtarır
+- **Kardeşler** — kardeşlerinle büyür, kavga eder, yıllar sonra eski günleri yâd edersin
+- **Mahkemeler** — trafik kazasında tazminat davası aç ya da sana açılan davada kendini savun
+- **35+ rastgele hayat olayı** — bazıları seçim ister ve sonuçları yıllarca peşini bırakmaz
 - **Gerçekçi yaşlanma** — gençken vücudun kendini yeniler, 50'den sonra sağlığına dikkat etmen gerekir; mutsuzluk sağlığını yer
-- **10 başarım**, ölüm ekranında hayat özeti ve **otomatik kayıt** (kapatıp devam edebilirsin)
+- **13 başarım**, ölüm ekranında hayat özeti ve **3 ayrı kayıt slotu** (aynı anda üç farklı hayat sürdürebilirsin)
+
+## 📦 Tek Dosyalık Sürüm
+
+`node build.js` komutu, her şeyi tek bir `hayat-yolu.html` dosyasında birleştirir — telefonuna at, arkadaşına gönder, çift tıkla oyna.
 
 ## 🧪 Test
 

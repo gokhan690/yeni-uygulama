@@ -72,6 +72,24 @@ const DATA = {
     sanat:    ["ogretmen", "profesor"],
   },
 
+  // ---- Hastalıklar ----
+  // dmg: yıllık sağlık hasarı · cure: iyileşme şansı · surgery: ameliyat gerekir
+  diseases: [
+    { id: "astim",    name: "Astım",            emoji: "🫁", dmg: 3,  cost: 15000,  cure: .50, surgery: false, minAge: 3 },
+    { id: "migren",   name: "Kronik Migren",    emoji: "🤕", dmg: 2,  cost: 10000,  cure: .55, surgery: false, minAge: 12 },
+    { id: "diyabet",  name: "Diyabet",          emoji: "🩸", dmg: 4,  cost: 30000,  cure: .35, surgery: false, minAge: 30 },
+    { id: "tansiyon", name: "Hipertansiyon",    emoji: "💢", dmg: 4,  cost: 25000,  cure: .45, surgery: false, minAge: 40 },
+    { id: "kalp",     name: "Kalp Hastalığı",   emoji: "💔", dmg: 8,  cost: 400000, cure: .65, surgery: true,  minAge: 45 },
+    { id: "kanser",   name: "Kanser",           emoji: "🎗️", dmg: 12, cost: 600000, cure: .55, surgery: true,  minAge: 35 },
+  ],
+
+  // ---- Ünlü Olma Yolları ----
+  fameJobs: [
+    { id: "muzisyen", title: "Müzisyen",               emoji: "🎤", stat: "looks",  statName: "görünüş", action: "Albüm çıkar",            actionEmoji: "💿", base: 30000 },
+    { id: "oyuncu",   title: "Oyuncu",                 emoji: "🎬", stat: "looks",  statName: "görünüş", action: "Dizi seçmelerine katıl", actionEmoji: "🎭", base: 40000 },
+    { id: "fenomen",  title: "Sosyal Medya Fenomeni",  emoji: "📱", stat: "smarts", statName: "zeka",    action: "Viral video çek",        actionEmoji: "🎥", base: 20000 },
+  ],
+
   // ---- Varlıklar ----
   cars: [
     { id: "bisiklet",  name: "Bisiklet",            emoji: "🚲", price: 15000,    happiness: 4 },
@@ -164,6 +182,40 @@ const DATA = {
       ]
     },
 
+    // --- Mahkeme / Trafik Kazaları ---
+    {
+      min: 20, max: 75, chance: .06, cond: s => s.cars.length > 0,
+      text: "🚗 Trafik kazası geçirdin! Karşı taraf kırmızı ışıkta geçip arabanı pert etti.",
+      choices: [
+        { label: "Tazminat davası aç", emoji: "⚖️", fx: { money: -30000, health: -8 }, msg: "Avukat tutup mahkemenin yolunu tuttun...", risk: { chance: .65, fx: { money: 250000, happiness: 8 }, msg: "Davayı KAZANDIN! Mahkeme ₺250.000 tazminata hükmetti. 🎉", failMsg: "Bilirkişi raporu aleyhine çıktı, davayı kaybettin. Avukat masrafları da cabası...", failFx: { happiness: -8 } } },
+        { label: "Sigortayla anlaş", emoji: "🤝", fx: { money: 40000, health: -8 }, msg: "Sigorta şirketiyle ₺40.000'e anlaştın. Az ama dertsiz." },
+      ]
+    },
+    {
+      min: 22, max: 75, chance: .05, cond: s => s.cars.length > 0,
+      text: "⚖️ Bir yaya, arabanla ona çarptığını iddia ederek ₺200.000'lik tazminat davası açtı!",
+      choices: [
+        { label: "Şehrin en iyi avukatını tut", emoji: "👨‍⚖️", fx: { money: -60000 }, msg: "Pahalı ama işini bilen bir avukat tuttun...", risk: { chance: .75, fx: { happiness: 6 }, msg: "Avukatın iddiaları paramparça etti — beraat ettin! 🎉", failMsg: "Her şeye rağmen davayı kaybettin ve tazminatı ödedin.", failFx: { money: -200000, happiness: -10 } } },
+        { label: "Kendini kendin savun", emoji: "🗣️", fx: {}, msg: "Mahkemede kürsüye kendin çıktın...", risk: { chance: .35, fx: { happiness: 8 }, msg: "İnanılmaz ama kazandın! Hâkim iddiaları asılsız buldu.", failMsg: "Kaybettin. ₺200.000 tazminat ödemek zorunda kaldın.", failFx: { money: -200000, happiness: -12 } } },
+      ]
+    },
+
+    // --- Şöhret Olayları ---
+    { min: 16, max: 85, chance: .2, cond: s => s.fame >= 30, text: "🤩 Sokakta hayranların seni tanıdı, fotoğraf kuyruğu oluştu!", fx: { happiness: 6 } },
+    {
+      min: 18, max: 85, chance: .12, cond: s => s.fame >= 50,
+      text: "📰 Magazin basını hakkında asılsız bir skandal haberi yaydı!",
+      choices: [
+        { label: "Tekzip ve dava", emoji: "⚖️", fx: { money: -40000 }, msg: "Hukuk ekibini devreye soktun...", risk: { chance: .6, fx: { money: 150000, happiness: 6 }, msg: "Gazete tekzip yayınladı ve tazminat ödedi!", failMsg: "Dava düştü, dedikodu daha da büyüdü.", failFx: { happiness: -8 } } },
+        { label: "Görmezden gel", emoji: "😎", fx: { happiness: -5 }, msg: "Gündem birkaç haftada değişti ama canın epey sıkıldı." },
+      ]
+    },
+    { min: 18, max: 85, chance: .12, cond: s => s.fame >= 60, text: "💎 Dev bir marka seninle reklam anlaşması imzaladı!", fx: { money: 500000, happiness: 8 } },
+
+    // --- Kardeş Olayları ---
+    { min: 6, max: 17, chance: .15, cond: s => s.siblings.some(k => k.alive), text: "😤 Kardeşinle televizyon kumandası yüzünden saç saça kavga ettiniz.", fx: { happiness: -4 } },
+    { min: 25, max: 75, chance: .07, cond: s => s.siblings.some(k => k.alive), text: "🍻 Kardeşinle buluşup eski günleri yâd ettiniz. Gözlerinizden yaş gelene kadar güldünüz.", fx: { happiness: 7 } },
+
     // --- Yaşlılık (60+) ---
     { min: 60, max: 100, chance: .12, text: "Eklemlerin ağrıyor, merdivenler eskisi gibi kolay değil.", fx: { health: -6 } },
     { min: 62, max: 100, chance: .1, text: "Torun sevgisi gibisi yok. Parkta harika bir gün geçirdiniz. 👴👶", fx: { happiness: 8 }, cond: s => s.children.length > 0 },
@@ -191,6 +243,9 @@ const DATA = {
     { id: "doktor",    name: "Beyaz Önlük",       emoji: "🩺", desc: "Doktor ol" },
     { id: "sabikali",  name: "Firari",            emoji: "⛓️", desc: "Hapse gir" },
     { id: "dede",      name: "Emektar",           emoji: "👴", desc: "Emekli ol" },
+    { id: "unlu",      name: "Yıldız",            emoji: "🌟", desc: "Ünün 50'yi geçsin" },
+    { id: "efsane",    name: "Yaşayan Efsane",    emoji: "👑", desc: "Ünün 90'ı geçsin" },
+    { id: "savasci",   name: "Savaşçı",           emoji: "🎗️", desc: "Ameliyatla ciddi bir hastalığı yen" },
   ],
 
   causesOfDeath: {

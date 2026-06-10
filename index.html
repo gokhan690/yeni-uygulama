@@ -43,7 +43,11 @@
     </div>
 
     <button class="btn btn-primary btn-big" id="btn-start">🍼 Hayata Başla</button>
-    <button class="btn btn-ghost" id="btn-continue" style="display:none">💾 Kayıtlı Hayata Devam Et</button>
+
+    <div class="form-group" id="slots-group" style="display:none; margin-top:18px">
+      <label>Kayıtlı Hayatlar</label>
+      <div class="slot-list" id="slot-list"></div>
+    </div>
   </div>
 </div>
 
@@ -84,6 +88,11 @@
       <span class="stat-label">✨ Görünüş</span>
       <div class="bar"><div class="bar-fill looks" id="bar-looks"></div></div>
       <span class="stat-val" id="val-looks">0</span>
+    </div>
+    <div class="stat" id="row-fame" style="display:none">
+      <span class="stat-label">🌟 Ün</span>
+      <div class="bar"><div class="bar-fill fame" id="bar-fame"></div></div>
+      <span class="stat-val" id="val-fame">0</span>
     </div>
   </section>
 

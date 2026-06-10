@@ -175,6 +175,23 @@ select option { background: var(--bg3); }
 .bar-fill.health    { background: linear-gradient(90deg, #f87171, #ef4444); }
 .bar-fill.smarts    { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
 .bar-fill.looks     { background: linear-gradient(90deg, #c084fc, #a855f7); }
+.bar-fill.fame      { background: linear-gradient(90deg, #fbbf24, #ec4899); }
+
+/* Kayıt slotları */
+.slot-list { display: flex; flex-direction: column; gap: 8px; }
+.slot-row { display: flex; gap: 8px; }
+.slot-load {
+  flex: 1; text-align: left; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--card-border); background: rgba(0,0,0,.25);
+  color: var(--text); cursor: pointer; font-size: 14px; transition: border-color .2s;
+}
+.slot-load:hover { border-color: var(--accent); }
+.slot-load small { color: var(--text-dim); }
+.slot-del {
+  width: 44px; border-radius: 12px; border: 1px solid var(--card-border);
+  background: rgba(248,113,113,.12); color: var(--red); cursor: pointer; font-size: 16px;
+}
+.slot-del:hover { background: rgba(248,113,113,.3); }
 
 /* Günlük */
 .log {

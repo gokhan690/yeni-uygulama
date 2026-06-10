@@ -67,9 +67,15 @@ for (let life = 0; life < 100; life++) {
           () => S.money >= DATA.pets[0].price && buyPet("balik"),
           () => S.money >= DATA.cars[2].price && buyCar("eskiaraba"),
           () => S.money >= DATA.homes[0].price && buyHome("studyo"),
+          () => S.age >= 16 && !S.job && !S.retired && Math.random() < .3 && startFame(DATA.fameJobs[Math.floor(Math.random() * 3)].id),
+          () => S.job && S.job.fameType && fameAction(),
+          () => S.job && S.job.fameType && S.fame >= 40 && fameTour(),
+          () => S.diseases.length && S.money >= S.diseases[0].cost && treatDisease(S.diseases[0].id),
         ];
         for (let i = 0; i < 3; i++) acts[Math.floor(Math.random() * acts.length)]();
       }
+      // sorumlu oyuncu: hastalığını tedavi ettirir
+      if (S.alive && S.diseases.length && S.money >= S.diseases[0].cost) treatDisease(S.diseases[0].id);
     }
     if (!S.alive) {
       deaths++;

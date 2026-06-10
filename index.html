@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hayat Yolu — Yaşam Simülasyonu</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= KARAKTER OLUŞTURMA EKRANI ================= -->
+<div id="screen-create" class="screen active">
+  <div class="create-card glass">
+    <div class="logo">🌱</div>
+    <h1>Hayat Yolu</h1>
+    <p class="subtitle">Yeni bir hayata başla. Her seçim kaderini değiştirir.</p>
+
+    <div class="form-group">
+      <label>İsim</label>
+      <input type="text" id="inp-name" placeholder="Adını yaz veya boş bırak (rastgele)">
+    </div>
+
+    <div class="form-group">
+      <label>Cinsiyet</label>
+      <div class="seg" id="seg-gender">
+        <button data-val="m" class="active">👨 Erkek</button>
+        <button data-val="f">👩 Kadın</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Doğduğun Şehir</label>
+      <select id="inp-city"></select>
+    </div>
+
+    <div class="form-group">
+      <label>Zorluk</label>
+      <div class="seg" id="seg-diff">
+        <button data-val="easy">😇 Kolay</button>
+        <button data-val="normal" class="active">🙂 Normal</button>
+        <button data-val="hard">😈 Zor</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-big" id="btn-start">🍼 Hayata Başla</button>
+    <button class="btn btn-ghost" id="btn-continue" style="display:none">💾 Kayıtlı Hayata Devam Et</button>
+  </div>
+</div>
+
+<!-- ================= OYUN EKRANI ================= -->
+<div id="screen-game" class="screen">
+
+  <!-- Üst bilgi -->
+  <header class="topbar glass">
+    <div class="avatar-wrap">
+      <div class="avatar" id="ui-avatar">👶</div>
+      <div class="age-badge" id="ui-age">0</div>
+    </div>
+    <div class="who">
+      <div class="who-name" id="ui-name">—</div>
+      <div class="who-sub" id="ui-sub">—</div>
+    </div>
+    <div class="money" id="ui-money">₺0</div>
+  </header>
+
+  <!-- Stat çubukları -->
+  <section class="stats glass">
+    <div class="stat">
+      <span class="stat-label">😊 Mutluluk</span>
+      <div class="bar"><div class="bar-fill happiness" id="bar-happiness"></div></div>
+      <span class="stat-val" id="val-happiness">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">❤️ Sağlık</span>
+      <div class="bar"><div class="bar-fill health" id="bar-health"></div></div>
+      <span class="stat-val" id="val-health">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">🧠 Zeka</span>
+      <div class="bar"><div class="bar-fill smarts" id="bar-smarts"></div></div>
+      <span class="stat-val" id="val-smarts">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">✨ Görünüş</span>
+      <div class="bar"><div class="bar-fill looks" id="bar-looks"></div></div>
+      <span class="stat-val" id="val-looks">0</span>
+    </div>
+  </section>
+
+  <!-- Yaşam günlüğü -->
+  <main class="log" id="ui-log"></main>
+
+  <!-- Alt aksiyon barı -->
+  <nav class="actionbar glass">
+    <button class="tab-btn" data-panel="career"><span>💼</span>Kariyer</button>
+    <button class="tab-btn" data-panel="relations"><span>💞</span>İlişkiler</button>
+    <button class="btn-age" id="btn-age">+<small>Yaş Al</small></button>
+    <button class="tab-btn" data-panel="activities"><span>🎯</span>Aktivite</button>
+    <button class="tab-btn" data-panel="assets"><span>🏠</span>Varlıklar</button>
+  </nav>
+</div>
+
+<!-- ================= PANEL / MODAL ================= -->
+<div id="overlay" class="overlay">
+  <div class="modal glass" id="modal">
+    <div class="modal-head">
+      <h2 id="modal-title">Başlık</h2>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ================= ÖLÜM EKRANI ================= -->
+<div id="screen-death" class="screen">
+  <div class="death-card glass">
+    <div class="tombstone">🪦</div>
+    <h1 id="death-name">—</h1>
+    <p class="death-years" id="death-years">—</p>
+    <p class="death-cause" id="death-cause">—</p>
+    <div class="death-summary" id="death-summary"></div>
+    <button class="btn btn-primary btn-big" id="btn-rebirth">🌱 Yeniden Doğ</button>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<script src="data.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
